@@ -1546,6 +1546,40 @@ void StreamBrowserDialog::DoTimebaseSettings(shared_ptr<Oscilloscope> scope)
 			);
 	}
 
+	//Per-group analog/digital selection (one combo per full byte-group within the capture width).
+	//A group can be read as 8 individual digital channels or as one 0..255 analog value.
+	{
+		size_t groupCount = scope->GetChannelGroupCount();
+		static const vector<string> s_groupModeNames = { "Digital", "Analog" };
+		for(size_t g=0; g<groupCount; g++)
+		{
+			int sel = scope->IsChannelGroupAnalog(g) ? 1 : 0;
+			ImGui::SetNextItemWidth(width);
+			string label = "Group " + to_string(g);
+			if(renderCombo(
+				label.c_str(),
+				false,
+				ImGui::GetStyleColorVec4(ImGuiCol_FrameBg),
+				sel,
+				s_groupModeNames,
+				false,
+				0,
+				false))
+			{
+				scope->SetChannelGroupAnalog(g, sel == 1);
+				refresh = true;
+			}
+		}
+		if(groupCount > 0)
+		{
+			HelpMarker(
+				"Read each byte-group of pins either as 8 individual digital channels (D…) or as a "
+				"single analog value (A…, the 8-bit byte scaled to the channel's voltage range).\n\n"
+				"Only whole groups inside the current channel mode can be switched to analog."
+				);
+		}
+	}
+
 	//Global ADC mode switch
 	if(scope->IsADCModeConfigurable() && !scope->IsADCModePerChannel())
 	{

@@ -1568,6 +1568,27 @@ void StreamBrowserDialog::DoTimebaseSettings(shared_ptr<Oscilloscope> scope)
 			{
 				scope->SetChannelGroupAnalog(g, sel == 1);
 				refresh = true;
+
+				//Swap the group's channels in the display: show the newly-enabled ones (A<g> when
+				//analog, the 8 D<8g+k> when digital) and remove the ones just disabled, so switching
+				//analog/digital replaces them rather than piling up. Digital channels stack into a
+				//shared area (like startup); analog gets its own. Areas left empty auto-close.
+				for(size_t idx : scope->GetChannelGroupChannelIndices(g))
+				{
+					auto gch = scope->GetOscilloscopeChannel(idx);
+					if(!gch)
+						continue;
+					StreamDescriptor sd(gch, 0);
+					if(scope->IsChannelEnabled(idx))
+					{
+						if(gch->GetType(0) == Stream::STREAM_TYPE_DIGITAL)
+							m_parent->FindAreaForStream(nullptr, sd);
+						else
+							m_parent->AddAreaForStreamIfNotAlreadyVisible(sd);
+					}
+					else
+						m_parent->RemoveStreamFromDisplay(sd);
+				}
 			}
 		}
 		if(groupCount > 0)

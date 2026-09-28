@@ -285,6 +285,7 @@ public:
 	std::shared_ptr<MeasurementsDialog> GetMeasurementsDialog(bool createIfNotExisting);
 
 	void AddAreaForStreamIfNotAlreadyVisible(StreamDescriptor stream);
+	void RemoveStreamFromDisplay(StreamDescriptor stream);
 
 	/**
 		@brief Returns the groups we have configured for our graph editor

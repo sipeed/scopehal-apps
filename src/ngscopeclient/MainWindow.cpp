@@ -360,6 +360,30 @@ void MainWindow::AddAreaForStreamIfNotAlreadyVisible(StreamDescriptor stream)
 }
 
 /**
+	@brief Removes a stream from every waveform area displaying it.
+
+	Any area left with no streams closes itself on the next frame. Used e.g. when a channel group is
+	switched between analog and digital so the now-hidden channels disappear from the display.
+ */
+void MainWindow::RemoveStreamFromDisplay(StreamDescriptor stream)
+{
+	lock_guard<recursive_mutex> lock(m_waveformGroupsMutex);
+
+	for(auto group : m_waveformGroups)
+	{
+		for(auto area : group->GetWaveformAreas())
+		{
+			//Iterate from the end since RemoveStream shifts later indices down
+			for(ssize_t i = (ssize_t)area->GetStreamCount() - 1; i >= 0; i--)
+			{
+				if(area->GetStream(i) == stream)
+					area->RemoveStream(i);
+			}
+		}
+	}
+}
+
+/**
 	@brief Figure out what group to use for a newly added stream, based on unit compatibility etc
  */
 shared_ptr<WaveformGroup> MainWindow::GetBestGroupForWaveform(StreamDescriptor /*stream*/)

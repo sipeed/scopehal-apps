@@ -98,6 +98,10 @@ public:
 	//Pattern mode controls (instrument-global capture pattern selector)
 	std::vector<std::string> m_patternmodeNames;
 	int m_patternmode;
+
+	//Channel mode controls (instrument-global capture width / channel-count selector)
+	std::vector<std::string> m_channelmodeNames;
+	int m_channelmode;
 };
 
 class StreamBrowserDialog : public Dialog

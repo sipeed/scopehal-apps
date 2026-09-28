@@ -116,6 +116,9 @@ StreamBrowserTimebaseInfo::StreamBrowserTimebaseInfo(shared_ptr<Oscilloscope> sc
 
 	m_patternmode = scope->GetPatternMode();
 	m_patternmodeNames = scope->GetPatternModeNames();
+
+	m_channelmode = scope->GetCaptureWidth();
+	m_channelmodeNames = scope->GetCaptureWidthNames();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1512,6 +1515,36 @@ void StreamBrowserDialog::DoTimebaseSettings(shared_ptr<Oscilloscope> scope)
 		"Adjust the number of samples captured each trigger event.\n\n"
 		"Note that with some instruments, the maximum memory depth varies depending on which channels are active."
 		);
+
+	//Channel mode / capture width (trades active channel count against max sample rate)
+	if(scope->IsCaptureWidthConfigurable())
+	{
+		bool nomodes = config->m_channelmodeNames.size() <= 1;
+		if(nomodes)
+			ImGui::BeginDisabled();
+		ImGui::SetNextItemWidth(width);
+		if(renderCombo(
+			"Channel mode",
+			false,
+			ImGui::GetStyleColorVec4(ImGuiCol_FrameBg),
+			config->m_channelmode,
+			config->m_channelmodeNames,
+			false,
+			0,
+			false))
+		{
+			scope->SetCaptureWidth(config->m_channelmode);
+			refresh = true;
+		}
+		if(nomodes)
+			ImGui::EndDisabled();
+
+		HelpMarker(
+			"Number of active capture channels.\n\n"
+			"Fewer channels allow a higher maximum sample rate. Changing this enables or disables "
+			"channels and may lower the sample rate to stay within the new limit."
+			);
+	}
 
 	//Global ADC mode switch
 	if(scope->IsADCModeConfigurable() && !scope->IsADCModePerChannel())

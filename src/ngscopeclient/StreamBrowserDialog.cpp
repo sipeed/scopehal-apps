@@ -113,6 +113,9 @@ StreamBrowserTimebaseInfo::StreamBrowserTimebaseInfo(shared_ptr<Oscilloscope> sc
 
 	m_adcmode = scope->GetADCMode(0);
 	m_adcmodeNames = scope->GetADCModeNames(0);
+
+	m_patternmode = scope->GetPatternMode();
+	m_patternmodeNames = scope->GetPatternModeNames();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1538,6 +1541,36 @@ void StreamBrowserDialog::DoTimebaseSettings(shared_ptr<Oscilloscope> scope)
 			"Some instruments allow the ADC to operate in several modes, typically trading bit depth "
 			"against sample rate. Available modes may vary depending on the current sample rate and "
 			"which channels are in use."
+			);
+	}
+
+	//Instrument-global capture pattern switch (its own control, independent of ADC mode)
+	if(scope->IsPatternModeConfigurable())
+	{
+		bool nopatterns = config->m_patternmodeNames.size() <= 1;
+		if(nopatterns)
+			ImGui::BeginDisabled();
+		ImGui::SetNextItemWidth(width);
+		if(renderCombo(
+			"Pattern",
+			false,
+			ImGui::GetStyleColorVec4(ImGuiCol_FrameBg),
+			config->m_patternmode,
+			config->m_patternmodeNames,
+			false,
+			0,
+			false))
+		{
+			scope->SetPatternMode(config->m_patternmode);
+			refresh = true;
+		}
+		if(nopatterns)
+			ImGui::EndDisabled();
+
+		HelpMarker(
+			"Capture pattern source.\n\n"
+			"\"Normal\" captures live signals. Other modes substitute a built-in test pattern or "
+			"emulated data for the acquisition, useful for connection testing and diagnostics."
 			);
 	}
 

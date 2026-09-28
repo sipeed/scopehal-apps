@@ -94,6 +94,10 @@ public:
 	//ADC mode controls
 	std::vector<std::string> m_adcmodeNames;
 	int m_adcmode;
+
+	//Pattern mode controls (instrument-global capture pattern selector)
+	std::vector<std::string> m_patternmodeNames;
+	int m_patternmode;
 };
 
 class StreamBrowserDialog : public Dialog

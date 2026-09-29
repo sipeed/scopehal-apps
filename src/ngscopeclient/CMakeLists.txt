@@ -139,12 +139,21 @@ add_custom_target(
 	COMMENT "Copying icons..."
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/ngscopeclient/icons ${CMAKE_BINARY_DIR}/src/ngscopeclient/icons)
 
+# Copy each shader with its own short command rather than one
+# `copy_if_different <all shaders> <dir>`: the full list overflows the Windows/Wine
+# cmd.exe command-line limit (Ninja wraps it in a .bat that mangles the destination
+# path, e.g. "C:\workspace" -> "orkspace"). Per-file commands stay well under the limit
+# and behave identically on Linux/macOS.
 get_target_property(SPIRV_SHADERS protocolshaders SOURCES)
 add_custom_target(
 	ngprotoshaders
 	COMMENT "Copying protocol shaders..."
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SPIRV_SHADERS} ${CMAKE_BINARY_DIR}/src/ngscopeclient/shaders
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/ngscopeclient/shaders
 	)
+foreach(_spv ${SPIRV_SHADERS})
+	add_custom_command(TARGET ngprotoshaders POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_spv} ${CMAKE_BINARY_DIR}/src/ngscopeclient/shaders)
+endforeach()
 add_dependencies(ngprotoshaders
 	protocolshaders)
 
@@ -152,8 +161,12 @@ get_target_property(SPIRV_SHADERS2 halshaders SOURCES)
 add_custom_target(
 	nghalshaders
 	COMMENT "Copying scopehal shaders..."
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SPIRV_SHADERS2} ${CMAKE_BINARY_DIR}/src/ngscopeclient/shaders
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/src/ngscopeclient/shaders
 	)
+foreach(_spv ${SPIRV_SHADERS2})
+	add_custom_command(TARGET nghalshaders POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_spv} ${CMAKE_BINARY_DIR}/src/ngscopeclient/shaders)
+endforeach()
 add_dependencies(nghalshaders
 	halshaders)
 

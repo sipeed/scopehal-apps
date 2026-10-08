@@ -89,6 +89,7 @@ ChannelPropertiesDialog::ChannelPropertiesDialog(InstrumentChannel* chan, MainWi
 
 	//Digital channel settings
 	auto scope = ochan->GetScope();
+	m_thresholdActive = false;
 	if(scope)
 	{
 		m_committedHysteresis = scope->GetDigitalHysteresis(chan->GetIndex());
@@ -344,6 +345,20 @@ bool ChannelPropertiesDialog::DoRender()
 
 				if(scope->IsDigitalThresholdConfigurable())
 				{
+					//The threshold may be shared across channels (e.g. a single global comparator),
+					//so another channel's dialog can change it behind our back. When this field is
+					//not being actively edited here, resync its display from the driver so every
+					//channel reflects the current value.
+					if(!m_thresholdActive)
+					{
+						float cur = scope->GetDigitalThreshold(index);
+						if(cur != m_committedThreshold)
+						{
+							m_committedThreshold = cur;
+							m_threshold = yunit.PrettyPrint(cur);
+						}
+					}
+
 					ImGui::SetNextItemWidth(width);
 					if(UnitInputWithImplicitApply("Threshold", m_threshold, m_committedThreshold, yunit))
 					{
@@ -356,6 +371,7 @@ bool ChannelPropertiesDialog::DoRender()
 						// Tell intrument thread that the scope state has to be updated
 						if(m_state) m_state->m_needsUpdate[index] = true;
 					}
+					m_thresholdActive = ImGui::IsItemActive();
 					HelpMarker("Switching threshold for the digital input buffer");
 				}
 

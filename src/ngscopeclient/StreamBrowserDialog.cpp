@@ -2280,7 +2280,16 @@ void StreamBrowserDialog::renderStreamNode(
 								{	// Update offset
 									scopechan->SetDigitalThreshold(
 										scopeState->m_committedDigitalThreshold[channelIndex]);
-									scopeState->m_needsUpdate[channelIndex] = true;
+
+									//The threshold may be a single global comparator shared by every
+									//digital channel, so refresh every digital channel's displayed
+									//value, not just this one.
+									for(size_t ci=0; ci<scope->GetChannelCount(); ci++)
+									{
+										auto dchan = dynamic_cast<OscilloscopeChannel*>(scope->GetChannel(ci));
+										if(dchan && (dchan->GetType(0) == Stream::STREAM_TYPE_DIGITAL))
+											scopeState->m_needsUpdate[ci] = true;
+									}
 								}
 							}
 							else

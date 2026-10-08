@@ -63,6 +63,8 @@ protected:
 
 	std::string m_threshold;
 	float m_committedThreshold;
+	///@brief True while the threshold input was being edited last frame (gates the resync-from-driver)
+	bool m_thresholdActive;
 
 	std::string m_hysteresis;
 	float m_committedHysteresis;

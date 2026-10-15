@@ -1599,6 +1599,34 @@ void StreamBrowserDialog::DoTimebaseSettings(shared_ptr<Oscilloscope> scope)
 				"Only whole groups inside the current channel mode can be switched to analog."
 				);
 		}
+
+		//Which pin of an analog group carries the most significant bit (shown once a group is analog)
+		bool anyAnalog = false;
+		for(size_t g=0; g<groupCount; g++)
+			anyAnalog = anyAnalog || scope->IsChannelGroupAnalog(g);
+		if(anyAnalog && scope->IsAnalogBitOrderConfigurable())
+		{
+			int order = (int)scope->GetAnalogBitOrder();
+			ImGui::SetNextItemWidth(width);
+			if(renderCombo(
+				"ADC bit order",
+				false,
+				ImGui::GetStyleColorVec4(ImGuiCol_FrameBg),
+				order,
+				scope->GetAnalogBitOrderNames(),
+				false,
+				0,
+				false))
+			{
+				scope->SetAnalogBitOrder(order);
+				refresh = true;
+			}
+			HelpMarker(
+				"Which pin of an analog group carries the ADC's most significant bit.\n\n"
+				"Auto: CH0 = MSB (D7) with the Normal pattern, as the ADC module is wired, and "
+				"CH0 = LSB with the on-device test patterns. Applies from the next capture."
+				);
+		}
 	}
 
 	//Global ADC mode switch
